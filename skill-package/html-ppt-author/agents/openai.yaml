@@ -1,0 +1,5 @@
+interface:
+  display_name: "HTML PPT Toolkit"
+  short_description: "Build and validate editable HTML presentation decks"
+  brand_color: "#173047"
+  default_prompt: "Use $html-ppt-author to create an editable HTML presentation compatible with the local HTML PPT studio."

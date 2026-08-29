@@ -1,0 +1,19 @@
+# Local backups and exports
+*.bak-*
+__hppt-export-*.html
+导出/
+.browser-tmp/
+
+# Local QA and temporary artifacts
+.qa-*/
+*.tmp
+*.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Dependencies are resolved from the local runtime; do not vendor them here
+node_modules/

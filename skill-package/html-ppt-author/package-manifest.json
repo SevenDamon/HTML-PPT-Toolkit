@@ -1,0 +1,19 @@
+{
+  "name": "html-ppt-author",
+  "generatedFrom": "html-ppt-toolkit",
+  "toolkitVersion": "0.7.5",
+  "editorVersion": "0.7.5",
+  "generatedAt": "2026-08-29T11:41:46.355Z",
+  "files": {
+    "agents/openai.yaml": "1dcceda3e5a392de0e427a0ff2354940b3f647affa2674fdc94df7a0a0869c0e",
+    "assets/editor/html-ppt-editor.css": "7a2569dba774e14fc612d5d0a2a2efa565938ce881a3be1d364ae96ea0e4250f",
+    "assets/editor/html-ppt-editor.js": "b4d0013ad14860ef9ae71d7eafa5fd1b15a5e3a61d4faad8bbbd36b467f89b44",
+    "assets/editor/html-ppt-frame-adapter.js": "41b5e49affa75cd15c2e9e5e16f71a60fad2854cba546c9767df2e18668b2afe",
+    "README.md": "38329f6cfd168fdfe240fbe377edbe5a34bc5e8a6d997ce53e5a847f0bed9c11",
+    "references/contract.md": "eb30723306eaeee3f7a6cfa9e2705b7a851327f4b77f211240047b77dcd522c7",
+    "references/profiles.md": "702087b9226e56846006c854a3df7d6ca8ee5631cb7324d7776ddf16ec912de4",
+    "scripts/check-deck.mjs": "dd80bf9fbfe84cbb84a945772aec50535a67158fb48bfac3b307d696747002d5",
+    "scripts/install-editor.mjs": "8f6c6ff2900134da1311d4a868e253f09ee2a40266aff4d18b885bb248ac508b",
+    "SKILL.md": "664275c0c13ac0cfc1b63b069d2991bba499c2f2b758ebcb3907b242c1b1dadd"
+  }
+}

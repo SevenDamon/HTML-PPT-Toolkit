@@ -1,0 +1,13 @@
+{
+  "name": "html-ppt-toolkit",
+  "version": "0.7.5",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "node studio/server.mjs",
+    "check": "node scripts/check-deck.mjs",
+    "install-editor": "node scripts/install-editor.mjs",
+    "build-skill": "node scripts/build-skill.mjs",
+    "sync-skill": "node scripts/build-skill.mjs --install"
+  }
+}
