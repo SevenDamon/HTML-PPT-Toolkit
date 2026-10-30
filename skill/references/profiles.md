@@ -9,6 +9,7 @@ Use one shared runtime and choose capabilities at installation time. Do not main
 | Replace local images | Yes | Yes |
 | Configure progressive reveal order | Yes | Yes |
 | Undo and redo | Yes | Yes |
+| Page sorting, duplication, deletion (sibling DOM slides) | Yes | Yes |
 | Save browser-local draft | Yes | Yes |
 | Export an editable HTML copy | Yes | Yes |
 | Page organization tools | No | Yes |

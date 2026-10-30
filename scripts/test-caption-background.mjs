@@ -1,0 +1,37 @@
+import path from 'node:path';
+import os from 'node:os';
+import {pathToFileURL} from 'node:url';
+import {mkdtemp,rm} from 'node:fs/promises';
+const base=path.join(os.homedir(),'.codex/skills/dashiai-ppt/project');
+const {chromium}=await import(pathToFileURL(path.join(base,'node_modules/playwright-core/index.mjs')));
+const {getExportBrowserPath}=await import(pathToFileURL(path.join(base,'scripts/chrome-path.mjs')));
+const browser=await chromium.launch({headless:true,executablePath:getExportBrowserPath()});
+const temp=await mkdtemp(path.join(os.tmpdir(),'hppt-caption-bg-'));
+const page=await browser.newPage({viewport:{width:1600,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+const check=(v,m)=>{if(!v)throw Error(m)};
+try{
+ await page.goto(process.argv[2],{waitUntil:'networkidle'});await page.evaluate(()=>window.__htmlPptEditor.setEditing(true));
+ const caption=page.locator('#p01 [data-hppt-caption]').first();check(await caption.isVisible(),'图片说明未被识别');
+ await caption.fill('项目报告封面（已修改）');await caption.click();
+ check(await page.locator('[data-id="remove"]').isDisabled(),'说明编辑破坏结构保护');
+ check(await page.locator('#p01 .report-cover b').textContent()==='放大 ↗','放大操作文案被修改');
+ check(await page.locator('dialog[open]').count()===0,'编辑图片说明时误触放大');
+ await page.evaluate(()=>window.__htmlPptEditor.setEditing(false));await page.locator('#p01 .report-cover b').click();
+ check(await page.locator('#detail[open]').count()===1,'播放时放大功能失效');
+ await page.locator('#detail [data-action="close"]').click();await page.evaluate(()=>window.__htmlPptEditor.setEditing(true));
+ await page.locator('[data-id="pages"]').click();
+ const advice=await page.locator('.hppt-background-advice').textContent();check(advice.includes('16:9')&&advice.includes('1920 × 1080')&&advice.includes('3840 × 2160'),'缺少背景尺寸建议');
+ const png=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=1920;c.height=1080;const ctx=c.getContext('2d');ctx.fillStyle='#a2d5e6';ctx.fillRect(0,0,1920,1080);return c.toDataURL().split(',')[1]});
+ const [chooser]=await Promise.all([page.waitForEvent('filechooser'),page.locator('[data-page-action="backgroundImage"]').click()]);
+ await chooser.setFiles({name:'background.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+ await page.waitForFunction(()=>document.querySelector('#p01').style.backgroundImage.includes('data:image/png'));
+ check(await page.locator('#p01').evaluate(n=>n.style.backgroundSize)==='cover','默认填满背景失败');
+ await page.locator('[data-page-background-fit]').selectOption('contain');check(await page.locator('#p01').evaluate(n=>n.style.backgroundSize)==='contain','完整显示背景失败');
+ await page.locator('[data-page-action="backgroundRemove"]').click();check(await page.locator('#p01').evaluate(n=>n.style.backgroundImage)==='none','移除背景失败');
+ await page.locator('[data-page-action="undo"]').click();check(await page.locator('#p01').evaluate(n=>n.style.backgroundImage.includes('data:image/png')),'撤回没有恢复背景');
+ if(process.env.HPPT_QA_IMAGE)await page.screenshot({path:process.env.HPPT_QA_IMAGE});
+ await page.locator('[data-page-action="close"]').click();
+ const [download]=await Promise.all([page.waitForEvent('download'),page.locator('[data-id="html"]').click()]);const file=path.join(temp,'export.html');await download.saveAs(file);await page.goto(pathToFileURL(file).href,{waitUntil:'networkidle'});
+ await page.waitForFunction(()=>Boolean(window.__htmlPptEditor));check((await page.locator('#p01 [data-hppt-caption]').textContent()).trim()==='项目报告封面（已修改）','重开后图片说明丢失');check(await page.locator('#p01').evaluate(n=>n.style.backgroundImage.includes('data:image/png')&&n.style.backgroundSize==='contain'),'重开后背景图片丢失');check(!errors.length,errors.join('\n'));
+ console.log(JSON.stringify({ok:true,caption:true,zoomPreserved:true,protectedLayout:true,backgroundUpload:true,sizeAdvice:true,fitModes:true,removeUndo:true,reopen:true,errors},null,2));
+}finally{await browser.close();await rm(temp,{recursive:true,force:true})}

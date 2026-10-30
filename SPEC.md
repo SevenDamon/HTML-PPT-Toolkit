@@ -37,7 +37,7 @@
 - `data-ppt-draggable`：允许拖动和调整尺寸。
 - `data-ppt-animate`：加入逐步出现序列。
 - `data-animation-order`：正整数，数字越小越先出现。
-- `data-ppt-protected`：结构元素，不允许编辑和删除。
+- `data-ppt-protected`：结构元素，不允许删除、移动或缩放。若容器内部某段文案需要编辑，可在具体文字节点上同时声明 `data-ppt-editable`；这只开放文字内容与文字样式，不开放结构操作。页码、进度条和导航控件不要添加该标记。
 
 编辑器运行时添加的 `data-hppt-*` 属性属于持久化状态，可以随 HTML 保存。
 
@@ -66,6 +66,15 @@ window.__getVisibleSlides = function () { return [...document.querySelectorAll('
 - PPTX 可编辑性以文字和基础形状为保证目标；复杂效果允许视觉回退。
 - iframe 模板应同时提供“可编辑 PPTX”和“保真图片版 PPTX”，名称必须明确，不能把整页图片版称为可编辑。
 - 第三方外层品牌栏只能通过可恢复的本地演示状态隐藏；不得默认删除脚本、版权元数据或不可恢复地改写原文件。
+
+## Wise PPT 轨道式页面
+
+带有 `data-runtime="wise-ppt-deck"` 的页面通常使用 `#deck > #deck-stage > #track > .slide`，通过轨道位移而不是 `.active` 控制当前页。共享编辑器应：
+
+- 使用 `data-hppt-icon` 等私有属性，避免触发宿主的 `[data-icon]` 扫描器；
+- 在不覆盖现有接口的前提下，将 `WisePPTRuntime.go(index)` 桥接为 `window.go(index)`；
+- 让 `window.__getVisibleSlides()` 返回 `#track > .slide`；
+- 仅在导出临时快照中把轨道页面规范化为 `#deck > .slide.active`，不得改变源文件的运行结构。
 
 ## 工具栏位置
 

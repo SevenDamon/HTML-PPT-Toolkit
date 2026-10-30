@@ -1,0 +1,34 @@
+import path from 'node:path';
+import os from 'node:os';
+import {pathToFileURL} from 'node:url';
+import {mkdtemp,rm} from 'node:fs/promises';
+const base=path.join(os.homedir(),'.codex/skills/dashiai-ppt/project');
+const {chromium}=await import(pathToFileURL(path.join(base,'node_modules/playwright-core/index.mjs')));
+const {getExportBrowserPath}=await import(pathToFileURL(path.join(base,'scripts/chrome-path.mjs')));
+const browser=await chromium.launch({headless:true,executablePath:getExportBrowserPath()});
+const temp=await mkdtemp(path.join(os.tmpdir(),'hppt-flow-'));
+const page=await browser.newPage({viewport:{width:1600,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+const check=(v,m)=>{if(!v)throw Error(m)};
+try{
+ await page.goto(pathToFileURL(path.resolve(process.argv[2])).href,{waitUntil:'networkidle'});await page.evaluate(()=>{window.go(6);window.__htmlPptEditor.setEditing(true)});
+ const nodes=page.locator('#p07 .path-stop'),selected=page.locator('#p07 .hppt-multi-selected');
+ await page.locator('[data-id="modulePick"]').click();await page.locator('[data-id="multiPick"]').click();
+ await nodes.nth(1).locator('p').click();await nodes.nth(2).locator('h3').click();
+ check(await selected.count()===2,'模块模式不能多选流程节点');check(await selected.evaluateAll(ns=>ns.every(n=>n.matches('.path-stop')&&n.querySelectorAll('[data-hppt-editable]').length===3)),'未选到完整的编号标题说明');
+ await page.locator('[data-id="multiPick"]').click();
+ await nodes.nth(0).locator('h3').click();await nodes.nth(1).locator('p').click({modifiers:['Control']});
+ check(await selected.count()===2,'Ctrl 多选模块失败');
+ await nodes.nth(1).locator('h3').click({modifiers:['Control']});check(await selected.count()===1,'Ctrl 再次点击没有取消选中');
+ await nodes.nth(1).locator('span').click({modifiers:['Control']});check(await selected.count()===2,'Ctrl 点击编号未选到完整模块');
+ check(await page.locator('#p07 .path-flow.hppt-multi-selected').count()===0,'误选整条流程图');
+ await page.locator('[data-id="modulePick"]').click();
+ await nodes.nth(0).locator('h3').click();await nodes.nth(1).locator('p').click({modifiers:['Control']});
+ check(await selected.count()===2&&await selected.evaluateAll(ns=>ns.every(n=>n.matches('h3,p'))),'Ctrl 单独文字多选失败');
+ await nodes.nth(2).locator('h3').click();check(await selected.count()===0,'普通点击没有退出临时多选');
+ await page.locator('[data-id="modulePick"]').click();await nodes.nth(0).locator('h3').click();await nodes.nth(1).locator('p').click({modifiers:['Control']});
+ await page.locator('[data-id="revealTogether"]').click();check(await nodes.nth(0).getAttribute('data-hppt-reveal-group')===await nodes.nth(1).getAttribute('data-hppt-reveal-group'),'模块无法同步出现');
+ await page.locator('[data-id="undo"]').click();check(await page.locator('#p07 [data-hppt-reveal-group]').count()===0,'撤回同步组失败');await page.locator('[data-id="redo"]').click();
+ await page.evaluate(()=>window.__htmlPptEditor.setEditing(false));await page.keyboard.press('PageDown');check(await nodes.nth(0).evaluate(n=>getComputedStyle(n).visibility==='visible')&&await nodes.nth(1).evaluate(n=>getComputedStyle(n).visibility==='visible'),'按键没有同时显示流程节点');
+ await page.evaluate(()=>window.__htmlPptEditor.setEditing(true));const [download]=await Promise.all([page.waitForEvent('download'),page.locator('[data-id="html"]').click()]);const file=path.join(temp,'export.html');await download.saveAs(file);await page.goto(pathToFileURL(file).href,{waitUntil:'networkidle'});await page.waitForFunction(()=>Boolean(window.__htmlPptEditor));check(await page.locator('#p07 .path-stop[data-hppt-reveal-group]').count()===2,'重开后同步关系丢失');
+ check(!errors.length,errors.join('\n'));console.log(JSON.stringify({ok:true,borderlessModules:true,fullNode:true,ctrlModules:true,ctrlText:true,toggleOff:true,ordinaryClick:true,parentNotSelected:true,animationUndoRedo:true,reopen:true,errors},null,2));
+}finally{await browser.close();await rm(temp,{recursive:true,force:true})}

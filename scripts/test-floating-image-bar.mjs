@@ -1,0 +1,38 @@
+import path from 'node:path';
+import os from 'node:os';
+import {pathToFileURL} from 'node:url';
+import {mkdtemp,rm} from 'node:fs/promises';
+const base=path.join(os.homedir(),'.codex/skills/dashiai-ppt/project');
+const {chromium}=await import(pathToFileURL(path.join(base,'node_modules/playwright-core/index.mjs')));
+const {getExportBrowserPath}=await import(pathToFileURL(path.join(base,'scripts/chrome-path.mjs')));
+const browser=await chromium.launch({headless:true,executablePath:getExportBrowserPath()});
+const temp=await mkdtemp(path.join(os.tmpdir(),'hppt-floating-'));
+const page=await browser.newPage({viewport:{width:1600,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+const check=(v,m)=>{if(!v)throw Error(m)};
+try{
+ await page.goto(process.argv[2],{waitUntil:'networkidle'});await page.evaluate(()=>{window.__htmlPptEditor.setEditing(true);document.querySelector('#p01 img').click()});
+ const bar=page.locator('.hppt-effects-floating'),img=page.locator('#p01 img').first();
+ check(await bar.isVisible(),'未自动显示图片编辑栏');check(await page.locator('dialog[open]').count()===0,'仍有模态弹窗');
+ const initial=await bar.boundingBox();const grip=await page.locator('.hppt-effects-grip').boundingBox();
+ await page.mouse.move(grip.x+5,grip.y+5);await page.mouse.down();await page.mouse.move(grip.x-80,grip.y-70,{steps:6});await page.mouse.up();
+ const moved=await bar.boundingBox();check(Math.abs(moved.x-initial.x)>30||Math.abs(moved.y-initial.y)>30,'浮动栏拖动失败');
+ await page.locator('[data-image-turn="90"]').click();check(await img.evaluate(n=>n.style.rotate)==='90deg','右转90度失败');
+ await page.locator('[data-image-turn="-90"]').click();check(await img.evaluate(n=>n.style.rotate)==='0deg','左转90度失败');
+ await page.locator('[data-image-flip="x"]').click();await page.locator('[data-image-flip="y"]').click();check(await img.evaluate(n=>n.style.scale==='-1 -1'||n.style.scale==='-1'),'水平垂直翻转失败');
+ await page.locator('[data-effect="angle"]').fill('32');await page.locator('[data-effect="angle"]').press('Tab');check(await img.evaluate(n=>n.style.rotate)==='32deg','自定义角度失败');
+ const slider=page.locator('input[type="range"][data-effect="radius"]'),r=await slider.boundingBox();
+ await page.mouse.move(r.x+4,r.y+r.height/2);await page.mouse.down();await page.mouse.move(r.x+r.width*.65,r.y+r.height/2,{steps:10});
+ check(await img.evaluate(n=>parseFloat(n.style.borderRadius)>20),'拖动过程中未实时预览圆角');
+ await page.mouse.up();await page.locator('[data-id="undo"]').click();check(await img.evaluate(n=>!n.style.borderRadius||parseFloat(n.style.borderRadius)===0),'一次拖动未合并成一步撤回');
+ await img.evaluate(n=>n.click());await page.locator('input[type="number"][data-effect="radius"]').fill('28');await page.locator('input[type="number"][data-effect="radius"]').press('Tab');
+ check(await slider.inputValue()==='28','圆角数值未同步滑条');
+ await page.locator('[data-fade="left"]').click();check(await img.evaluate(n=>n.style.maskImage.includes('to left')),'图示选择渐变失败');
+ await page.locator('input[type="number"][data-effect="extent"]').fill('70');await page.locator('input[type="number"][data-effect="extent"]').press('Tab');
+ await page.locator('input[type="number"][data-effect="opacity"]').fill('60');await page.locator('input[type="number"][data-effect="opacity"]').press('Tab');
+ if(process.env.HPPT_QA_IMAGE)await page.screenshot({path:process.env.HPPT_QA_IMAGE});
+ await page.setViewportSize({width:600,height:700});await page.waitForTimeout(100);const small=await bar.boundingBox();check(small.x>=0&&small.y>=0&&small.x+small.width<=601&&small.y+small.height<=701,'窄窗口编辑栏超出屏幕');
+ await page.locator('[data-effect-close]').click();check(!await bar.isVisible(),'关闭失败');
+ const [download]=await Promise.all([page.waitForEvent('download'),page.locator('[data-id="html"]').click()]);const out=path.join(temp,'export.html');await download.saveAs(out);await page.goto(pathToFileURL(out).href,{waitUntil:'networkidle'});
+ await page.waitForFunction(()=>Boolean(window.__htmlPptEditor));check(await page.locator('#p01 img').first().evaluate(n=>(n.style.scale==='-1 -1'||n.style.scale==='-1')&&n.style.rotate==='32deg'&&n.style.borderRadius==='28px'&&n.style.maskImage.includes('to left')&&n.style.opacity==='0.6'),'重开后效果丢失');
+ check(!errors.length,errors.join('\n'));console.log(JSON.stringify({ok:true,automatic:true,nonModal:true,drag:true,rotate90:true,flip:true,livePreview:true,oneStepUndo:true,numericSync:true,fadeIcons:true,viewportClamp:true,reopen:true,errors},null,2));
+}finally{await browser.close();await rm(temp,{recursive:true,force:true})}

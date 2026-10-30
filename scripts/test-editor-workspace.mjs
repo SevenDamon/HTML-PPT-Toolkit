@@ -1,0 +1,35 @@
+import path from 'node:path';
+import os from 'node:os';
+import {pathToFileURL} from 'node:url';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {readFileSync} from 'node:fs';
+const expectedVersion=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8')).version;
+const base=path.join(os.homedir(),'.codex/skills/dashiai-ppt/project');
+const {chromium}=await import(pathToFileURL(path.join(base,'node_modules/playwright-core/index.mjs')));
+const {getExportBrowserPath}=await import(pathToFileURL(path.join(base,'scripts/chrome-path.mjs')));
+const browser=await chromium.launch({headless:true,executablePath:getExportBrowserPath()});
+const temp=await mkdtemp(path.join(os.tmpdir(),'hppt-workspace-'));
+const page=await browser.newPage({viewport:{width:1600,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+const check=(v,m)=>{if(!v)throw Error(m)};
+try{
+ await page.goto(pathToFileURL(path.resolve(process.argv[2])).href,{waitUntil:'networkidle'});await page.waitForFunction(()=>Boolean(window.__htmlPptEditor));
+ check(await page.evaluate(()=>window.HtmlPptEditor.version)===expectedVersion,'旧版内嵌编辑器仍生效');
+ await page.evaluate(()=>window.__htmlPptEditor.setEditing(true));await page.locator('[data-id="pages"]').click();
+ const panel=page.locator('.hppt-page-panel'),side=page.locator('.hppt-page-sidebar'),scroll=page.locator('.hppt-page-scroll');
+ const before=await side.boundingBox();await scroll.evaluate(n=>n.scrollTop=n.scrollHeight);const after=await side.boundingBox();check(before.y===after.y,'左侧设置随缩略图滚动');
+ check(await scroll.evaluate(n=>n.scrollTop>0),'缩略图没有独立滚动');await scroll.evaluate(n=>n.scrollTop=0);
+ if(process.env.HPPT_QA_IMAGE)await page.screenshot({path:path.join(os.tmpdir(),'hppt-workspace.png')});
+ const initial=await panel.boundingBox(),head=await page.locator('.hppt-page-brand strong').boundingBox();
+ await page.mouse.move(head.x+10,head.y+10);await page.mouse.down();await page.mouse.move(head.x+65,head.y+40,{steps:8});await page.mouse.up();const moved=await panel.boundingBox();check(moved.x>initial.x+40&&moved.y>initial.y+20,'窗口拖动失败');
+ const grip=await page.locator('.hppt-page-window-resize').boundingBox();await page.mouse.move(grip.x+10,grip.y+10);await page.mouse.down();await page.mouse.move(grip.x-160,grip.y-100,{steps:8});await page.mouse.up();const resized=await panel.boundingBox();check(resized.width<moved.width-100&&resized.height<moved.height-50,'窗口缩放失败');
+ const selected=page.locator('.hppt-page-selected');check(await selected.isVisible(),'缩放后设置不可见');
+ await page.locator('[data-page-action="center"]').click();check(Math.abs((await panel.boundingBox()).width-initial.width)<2,'复位窗口失败');
+ await page.locator('[data-page-action="copy"]').click();check(await page.locator('.hppt-page-card').count()===25,'复制功能回归失败');await page.locator('[data-page-action="undo"]').click();check(await page.locator('.hppt-page-card').count()===24,'撤回失败');
+ await page.locator('[data-page-action="close"]').click();await page.evaluate(()=>{window.go(0);document.querySelector('#p01 img').click()});check(await page.locator('.hppt-effects-floating').isVisible(),'图片编辑栏未显示');
+ const theme=await page.evaluate(()=>[document.querySelector('.hppt-dock'),document.querySelector('.hppt-page-panel'),document.querySelector('.hppt-effects-floating')].map(n=>{const s=getComputedStyle(n);return{bg:s.backgroundColor,color:s.color,font:s.fontFamily}}));check(theme.every(n=>n.bg===theme[0].bg&&n.font===theme[0].font&&n.color===theme[0].color),'三个界面的主题不一致');
+ if(process.env.HPPT_QA_IMAGE)await page.screenshot({path:path.join(os.tmpdir(),'hppt-workspace-imagebar.png')});
+ await page.locator('[data-effect-close]').click();await page.locator('[data-id="pages"]').click();await page.setViewportSize({width:800,height:650});await page.waitForTimeout(100);const narrow=await panel.boundingBox();check(narrow.x>=0&&narrow.y>=0&&narrow.x+narrow.width<=801&&narrow.y+narrow.height<=651,'窗口缩放越界');
+ await page.locator('[data-page-action="close"]').click();const [download]=await Promise.all([page.waitForEvent('download'),page.locator('[data-id="html"]').click()]);const output=path.join(temp,'export.html');await download.saveAs(output);await page.goto(pathToFileURL(output).href,{waitUntil:'networkidle'});await page.waitForFunction(()=>Boolean(window.__htmlPptEditor));check(await page.evaluate(()=>window.HtmlPptEditor.version)===expectedVersion,'导出文件回退旧版本');
+ await page.evaluate(()=>window.__htmlPptEditor.setEditing(true));await page.locator('[data-id="pages"]').click();check(await page.locator('.hppt-page-sidebar').isVisible(),'导出重开后布局丢失');
+ check(!errors.length,errors.join('\n'));console.log(JSON.stringify({ok:true,version:expectedVersion,fixedSidebar:true,independentScroll:true,drag:true,resize:true,reset:true,copyUndo:true,unifiedTheme:true,clamp:true,errors},null,2));
+}finally{await browser.close();await rm(temp,{recursive:true,force:true})}

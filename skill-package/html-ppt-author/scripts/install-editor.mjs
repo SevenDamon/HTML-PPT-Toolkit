@@ -26,6 +26,10 @@ const output = path.resolve(positional[1] || path.join(path.dirname(input), `${p
 const packageRoot = path.resolve(import.meta.dirname, '..');
 const sourceDir = await resolveEditorSource(packageRoot);
 const assetDir = path.join(path.dirname(output), 'html-ppt-editor');
+const [editorCss, editorJs] = await Promise.all([
+  readFile(path.join(sourceDir, 'html-ppt-editor.css'), 'utf8'),
+  readFile(path.join(sourceDir, 'html-ppt-editor.js'), 'utf8')
+]);
 let html = await readFile(input, 'utf8');
 
 if (strip) {
@@ -39,6 +43,16 @@ if (strip) {
 html = html.replace(/\s*<!--\s*自动重定向到在线地址[^>]*-->\s*<script>[\s\S]*?window\.location\.protocol\s*===\s*['"]file:['"][\s\S]*?window\.location\.replace\([\s\S]*?<\/script>\s*/i, '\n');
 
 const iframeTemplate = /<iframe\b[^>]*class=["'][^"']*\bcontent-iframe\b[^"']*["'][^>]*\bsrcdoc=/i.test(html) && /(?:&lt;|<)template\b[^>]*class=(?:&quot;|["'])page-data/i.test(html);
+// Upgrade portable exports that carry the shared runtime inline, without touching host scripts.
+html = html.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (whole, attrs, code) => {
+  if (/\bsrc=|application\/json/i.test(attrs)) return whole;
+  return /^\s*\(function\s*\(global\)\s*\{/.test(code) && /global\.HtmlPptEditor\s*=/.test(code) ? '' : whole;
+}).replace(/<style\b[^>]*\bdata-shared-editor[^>]*>[\s\S]*?<\/style>/gi, '');
+const portableBundle = JSON.stringify({ css: editorCss, js: editorJs }).replace(/<\/script/gi, '<\\/script');
+const recoverableBundle = /(<script\b[^>]*\bid=["']editor-bundle["'][^>]*>)[\s\S]*?(<\/script>\s*)(?=<script\b[^>]*data-deck-host)/i;
+const regularBundle = /(<script\b[^>]*\bid=["']editor-bundle["'][^>]*>)[\s\S]*?(<\/script>)/i;
+if (recoverableBundle.test(html)) html = html.replace(recoverableBundle, (_, open, close) => `${open}${portableBundle}${close}`);
+else html = html.replace(regularBundle, (_, open, close) => `${open}${portableBundle}${close}`);
 html = html
   .replace(/\s*<link[^>]+html-ppt-editor\.css[^>]*>/gi, '')
   .replace(/\s*<style[^>]+data-html-ppt-profile-style[^>]*>[\s\S]*?<\/style>/gi, '')
@@ -60,8 +74,8 @@ html = html
 
 await mkdir(assetDir, { recursive: true });
 await Promise.all([
-  copyFile(path.join(sourceDir, 'html-ppt-editor.css'), path.join(assetDir, 'html-ppt-editor.css')),
-  copyFile(path.join(sourceDir, 'html-ppt-editor.js'), path.join(assetDir, 'html-ppt-editor.js')),
+  writeFile(path.join(assetDir, 'html-ppt-editor.css'), editorCss, 'utf8'),
+  writeFile(path.join(assetDir, 'html-ppt-editor.js'), editorJs, 'utf8'),
   copyFile(path.join(sourceDir, 'html-ppt-frame-adapter.js'), path.join(assetDir, 'html-ppt-frame-adapter.js'))
 ]);
 await writeFile(output, html, 'utf8');

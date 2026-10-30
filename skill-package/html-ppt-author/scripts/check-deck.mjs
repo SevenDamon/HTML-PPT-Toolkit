@@ -29,7 +29,8 @@ const encodedIframePages = [...html.matchAll(/&lt;template\b(?:(?!&gt;)[\s\S])*?
 const literalIframePages = [...html.matchAll(/<template\b[^>]*class=["'][^"']*\bpage-data\b[^"']*["'][^>]*>/gi)].length;
 const iframeTemplate = /<iframe\b[^>]*class=["'][^"']*\bcontent-iframe\b[^"']*["'][^>]*\bsrcdoc=/i.test(html) && encodedIframePages + literalIframePages > 0;
 const iframePages = iframeTemplate ? encodedIframePages + literalIframePages : 0;
-const ids = slideTags.map(tag => tag.match(/\bid=["']([^"']+)["']/i)?.[1]).filter(Boolean);
+const wisePpt = /<html\b[^>]*data-runtime=["']wise-ppt-deck["']/i.test(html) && /id=["']track["']/i.test(html);
+const ids = slideTags.map(tag => tag.match(/(?:^|\s)id=["']([^"']+)["']/i)?.[1] || tag.match(/\bdata-page-id=["']([^"']+)["']/i)?.[1]).filter(Boolean);
 const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
 const editorLinked = /html-ppt-editor\.js/i.test(html);
 const embeddedProfile = html.match(/HTML_PPT_EDITOR_PROFILE\s*=\s*["'](lite|full)["']/i)?.[1]?.toLowerCase() || null;
@@ -37,13 +38,15 @@ const profile = embeddedProfile || (editorLinked ? (iframeTemplate ? 'full-legac
 
 if (!iframeTemplate && !/(?:id=["']deck["']|class=["'][^"']*\bstage\b|data-ppt-deck)/i.test(html)) errors.push('未发现演示容器（#deck、.stage 或 [data-ppt-deck]）。');
 if (!iframeTemplate && !slideTags.length) errors.push('未发现任何 .slide 或 [data-ppt-slide] 页面。');
-if (!iframeTemplate && slideTags.length && !slideTags.some(tag => /\bactive\b|aria-current=["']true["']|data-active=["']true["']/i.test(tag))) warnings.push('没有明确的当前页标记；编辑器将默认使用第一页。');
+if (!iframeTemplate && !wisePpt && slideTags.length && !slideTags.some(tag => /\bactive\b|aria-current=["']true["']|data-active=["']true["']/i.test(tag))) warnings.push('没有明确的当前页标记；编辑器将默认使用第一页。');
 if (!iframeTemplate && ids.length !== slideTags.length) risks.push(`${slideTags.length - ids.length} 页没有唯一 id；保存状态、定位页面和逐页导出可能不稳定。`);
 if (!iframeTemplate && duplicateIds.length) errors.push(`页面 id 重复：${duplicateIds.join(', ')}`);
 if (!iframeTemplate && !/(?:1920\s*(?:px)?[^\n]{0,80}1080|aspect-ratio\s*:\s*16\s*\/\s*9|16\s*:\s*9)/i.test(html)) risks.push('未识别到明确的 16:9 画布声明；必须人工确认投屏和导出比例。');
-if (!iframeTemplate && !/(?:window\.)?go\s*=|function\s+go\s*\(/i.test(html)) risks.push('未发现 window.go(index) 翻页接口；工作台无法保证逐页定位。');
-if (!iframeTemplate && !/__getVisibleSlides/.test(html)) risks.push('未发现 window.__getVisibleSlides() 导出接口；工作台只能尝试自动发现页面。');
-if (!iframeTemplate && !/(?:PageDown|ArrowDown)/.test(html)) warnings.push('未发现翻页笔常用按键信号处理。');
+if (!iframeTemplate && !wisePpt && !/(?:window\.)?go\s*=|function\s+go\s*\(/i.test(html)) risks.push('未发现 window.go(index) 翻页接口；工作台无法保证逐页定位。');
+if (!iframeTemplate && !wisePpt && !/__getVisibleSlides/.test(html)) risks.push('未发现 window.__getVisibleSlides() 导出接口；工作台只能尝试自动发现页面。');
+if (!iframeTemplate && !wisePpt && !/(?:PageDown|ArrowDown)/.test(html)) warnings.push('未发现翻页笔常用按键信号处理。');
+if (wisePpt && !editorLinked) warnings.push('已识别 Wise PPT；安装共享编辑器后会自动桥接翻页和逐页导出接口。');
+if (wisePpt && editorLinked) warnings.push('已启用 Wise PPT 兼容适配；复杂 SVG 在可编辑 PPTX 中可能栅格化，保真输出请使用 IMG。');
 if (iframeTemplate && !/html-ppt-frame-adapter\.js/i.test(html)) warnings.push('已识别 iframe 模板课件，但尚未接入 iframe 编辑适配器。');
 if (iframeTemplate) warnings.push('iframe 模板课件支持可编辑 PPTX 与保真图片版 PPTX；复杂蒙版、滤镜、交互和部分视觉效果在可编辑版中仍可能栅格化。');
 if (editorLinked && !embeddedProfile) warnings.push(iframeTemplate ? '旧版 iframe 编辑器没有显式配置档；为保持兼容，运行时暂按 Full 处理。建议重新安装明确的 Lite/Full 配置。' : '未发现显式编辑器配置档标记；运行时将按 Lite 模式处理。');
@@ -55,7 +58,7 @@ const report = {
   file,
   compatible: errors.length === 0 && risks.length === 0,
   editorInstalled: editorLinked,
-  format: iframeTemplate ? 'iframe-template' : 'standard',
+  format: iframeTemplate ? 'iframe-template' : wisePpt ? 'wise-ppt' : 'standard',
   slides: iframeTemplate ? iframePages : slideTags.length,
   slideIds: iframeTemplate ? iframePages : ids.length,
   editorLinked,
