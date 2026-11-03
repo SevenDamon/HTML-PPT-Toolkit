@@ -14,6 +14,8 @@ __hppt-export-*.html
 Thumbs.db
 .vscode/
 .idea/
+# Windows PowerShell may create this local cache when launched with an isolated profile.
+Microsoft/Windows/PowerShell/ModuleAnalysisCache
 
 # Dependencies are resolved from the local runtime; do not vendor them here
 node_modules/

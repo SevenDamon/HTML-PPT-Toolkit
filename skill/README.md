@@ -16,26 +16,13 @@ Copy-Item -Recurse -Force ".\codexskill\html-ppt-author" "$env:USERPROFILE\.code
 
 安装后重启 Codex，或让客户端重新加载 Skills。完整工具包、Windows 启动器与本地导出工作台位于 <https://github.com/SevenDamon/HTML-PPT-Toolkit>。
 
-## Skill、Full 转换和工作台有什么区别
+## Skill 与工具箱的分工
 
-| 名称 | 核心作用 | 需要记住的限制 |
-| --- | --- | --- |
-| `html-ppt-author` Skill | 给 Agent 提供制作规范、页面契约、编辑器和检查脚本，用来新建或改造可编辑 HTML PPT | 默认使用 Lite；Skill 本身不是 PDF/PPTX 导出后台 |
-| 转换为 Full 编辑版 | 把工具栏永久安装到 HTML，生成可直接双击编辑的版本 | HTML 与同级 `html-ppt-editor/` 文件夹必须一起移动或分享 |
-| HTML PPT 工作台 | 运行时临时外挂工具栏，并提供保存源文件、PDF/PPTX 导出服务 | 普通 HTML 只经工作台编辑，保存后不会因此永久带上工具栏 |
+Skill + Agent 负责新建 PPT 或适配旧 HTML，使用共享编辑器并验证结构。工具箱第一项“快速接入编辑器”只做规则自动接入，生成 Lite；第二项“打开课件 · 保存与导出”打开已有编辑器的 Lite/Full 文件，启用 Full 保存及导出服务，不重复注入工具栏。第三项“获取 Skill”打开 GitHub 安装说明。
 
-使用选择：Agent 新做 PPT 时调用 Skill；普通 HTML 想永久带工具栏时转换为 Full；编辑、保存源文件或导出 PDF/PPTX 时打开工作台。已经是最新版 Full 的 HTML 可以直接进工作台，不需要再次转换。
+Lite 可直接在浏览器编辑和导出新版 HTML；源文件写回、PDF/PPTX 通过工具箱第二项使用。覆盖源文件前自动备份。仅打开工作台不改变磁盘文件，保存后保留 Full 配置。没有编辑器的网页应先用第一项或由 Agent 适配。
 
-## 核心与发布关系
-
-`html-ppt-toolkit` 是唯一维护源，编辑器、安装器和检查器都只在工具包中修改。`html-ppt-author` 是由工具包自动生成的便携 Skill，供 Codex 或其他 Agent 读取协议、制作新稿并安装同一套编辑器。
-
-- 日常制作 HTML PPT：Agent 调用 Skill，默认使用 Lite。
-- 把已有 HTML 转为带导出能力的编辑版：双击工具包的“把HTML变成通用编辑版”，固定使用 Full。
-- 保存源文件、导出 PDF/PPTX：通过“启动HTML-PPT工作台”打开 Full 编辑版。
-- 编辑器升级后：双击“构建并同步Skill”，自动重建 Skill 包、安装到 Codex，并校验文件哈希。
-
-不要直接修改 `skill-package/html-ppt-author` 或已安装的 Skill；下次同步会覆盖这些生成结果。
+编辑器核心只在 html-ppt-toolkit/editor 维护，Skill 分发包由构建脚本生成。构建并同步 Skill 属于开发维护，不是日常工具箱功能。
 
 ## 与视觉设计 Skill 的正确配合顺序
 

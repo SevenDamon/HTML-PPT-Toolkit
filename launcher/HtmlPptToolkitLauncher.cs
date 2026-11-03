@@ -43,9 +43,9 @@ namespace HtmlPptToolkitLauncher
             Label versionLabel = NewLabel("v" + version, 480, 29, 110, 28, 10F, FontStyle.Bold, Color.FromArgb(215, 100, 50));
             versionLabel.TextAlign = ContentAlignment.MiddleRight;
             Controls.Add(versionLabel);
-            Controls.Add(NewLabel("只需要记住这一个入口。选择任务后，工具会打开对应窗口。", 31, 67, 425, 26, 10F, FontStyle.Regular, Color.FromArgb(91, 108, 121)));
+            Controls.Add(NewLabel("选择任务，开始编辑或导出 HTML PPT。", 31, 67, 355, 26, 10F, FontStyle.Regular, Color.FromArgb(91, 108, 121)));
             Button helpButton = new Button();
-            helpButton.Location = new Point(478, 62);
+            helpButton.Location = new Point(398, 62);
             helpButton.Size = new Size(112, 31);
             helpButton.Text = "使用说明";
             helpButton.FlatStyle = FlatStyle.Flat;
@@ -55,10 +55,22 @@ namespace HtmlPptToolkitLauncher
             helpButton.Cursor = Cursors.Hand;
             helpButton.Click += delegate { ShowHelp(); };
             Controls.Add(helpButton);
+            Button aboutButton = new Button();
+            aboutButton.Name = "aboutButton";
+            aboutButton.Location = new Point(520, 62);
+            aboutButton.Size = new Size(70, 31);
+            aboutButton.Text = "关于";
+            aboutButton.FlatStyle = FlatStyle.Flat;
+            aboutButton.FlatAppearance.BorderColor = Color.FromArgb(203, 220, 212);
+            aboutButton.ForeColor = Color.FromArgb(23, 48, 71);
+            aboutButton.BackColor = Color.White;
+            aboutButton.Cursor = Cursors.Hand;
+            aboutButton.Click += delegate { using (Form about = CreateAboutForm()) about.ShowDialog(this); };
+            Controls.Add(aboutButton);
 
-            AddAction(105, "转换为 Full 编辑版", "处理已有或外部 HTML；保留原文件并生成完整编辑版。", "convert-html.ps1");
-            AddAction(205, "打开 HTML PPT 工作台", "编辑 Full HTML，保存源文件，并导出 PDF 或可编辑 PPTX。", "start-studio.ps1");
-            AddAction(305, "构建并同步 Skill", "核心升级后使用；重建并安装 html-ppt-author Skill。", "build-and-sync-skill.ps1");
+            AddAction(105, "快速接入编辑器", "生成 Lite 编辑版，可编辑及另存 HTML。复杂网页建议由 Skill + Agent 适配结构。", "convert-html.ps1");
+            AddAction(205, "打开课件 · 保存与导出", "打开已接入编辑器的课件，启用源 HTML 保存及 PDF/PPTX 导出，不重复安装工具栏。", "start-studio.ps1");
+            AddAction(305, "获取 Skill", "打开 GitHub 的 Skill 页面，按说明安装到 Agent，用于新建或深度适配旧网页。", "https://github.com/SevenDamon/codexskill/tree/main/html-ppt-author");
 
             status = NewLabel("准备就绪", 31, 424, 550, 24, 9F, FontStyle.Regular, Color.FromArgb(91, 108, 121));
             Controls.Add(status);
@@ -91,6 +103,12 @@ namespace HtmlPptToolkitLauncher
 
         private void LaunchScript(string scriptName, string actionName)
         {
+            if (scriptName.StartsWith("https://github.com/", StringComparison.Ordinal))
+            {
+                try { Process.Start(new ProcessStartInfo(scriptName) { UseShellExecute = true }); status.Text = "已打开 Skill 获取页面；请按页面说明安装。"; }
+                catch (Exception error) { MessageBox.Show("无法打开浏览器：\n" + error.Message); }
+                return;
+            }
             string scriptPath = Path.Combine(toolkitRoot, scriptName);
             if (!File.Exists(scriptPath))
             {
@@ -132,18 +150,79 @@ namespace HtmlPptToolkitLauncher
             try { help.Icon = Icon; } catch { }
             help.Controls.Add(NewLabel("三者分别解决什么问题？", 28, 22, 560, 38, 19F, FontStyle.Bold, Color.FromArgb(23, 48, 71)));
             help.Controls.Add(NewLabel("先记住下面三句话，再按使用场景选择。", 31, 61, 620, 25, 10F, FontStyle.Regular, Color.FromArgb(91, 108, 121)));
-            AddHelpSection(help, 98, "1  html-ppt-author Skill", Color.FromArgb(63, 133, 136), "给 Agent 的制作规范和便携编辑器。用于从大纲制作新 PPT 或由 Agent 改造旧 PPT。默认 Lite；Skill 本身不提供 PDF/PPTX 后台。");
-            AddHelpSection(help, 208, "2  转换为 Full 编辑版", Color.FromArgb(215, 100, 50), "把工具栏永久安装到 HTML。以后直接双击 HTML 也能编辑；移动时要连同 html-ppt-editor 文件夹一起带走。");
-            AddHelpSection(help, 318, "3  HTML PPT 工作台", Color.FromArgb(23, 48, 71), "临时给网页外挂工具栏，并提供保存源文件、PDF 和 PPTX。普通 HTML 只用工作台编辑，保存后仍不会永久带工具栏。");
+            AddHelpSection(help, 98, "1  快速接入编辑器 · Lite", Color.FromArgb(63, 133, 136), "保留原文件，生成带工具栏的新 HTML。可以编辑、另存 HTML；不含源文件写回及 PDF/PPTX。复杂结构交给 Skill + Agent 适配。");
+            AddHelpSection(help, 208, "2  打开课件 · 保存与导出", Color.FromArgb(215, 100, 50), "打开已有编辑器的 HTML，启用 Full 保存和导出服务；不会重复接入编辑器。覆盖源文件前自动备份，关闭后台后服务停止。");
+            AddHelpSection(help, 318, "3  获取 Skill · GitHub", Color.FromArgb(23, 48, 71), "打开 html-ppt-author 仓库页面，按说明安装。配合 Agent 新建或适配旧 HTML。跳转页面不代表已经自动安装。");
             Panel choice = new Panel();
             choice.Location = new Point(28, 438);
             choice.Size = new Size(664, 112);
             choice.BackColor = Color.FromArgb(245, 239, 227);
             choice.Controls.Add(NewLabel("怎么选", 18, 13, 120, 27, 11F, FontStyle.Bold, Color.FromArgb(23, 48, 71)));
-            choice.Controls.Add(NewLabel("Agent 新做 → Skill    普通 HTML 永久带工具栏 → 转换 Full\n只想编辑或导出 → 工作台    已是最新版 Full → 直接进工作台", 18, 43, 625, 56, 10F, FontStyle.Regular, Color.FromArgb(61, 78, 92)));
+            choice.Controls.Add(NewLabel("快速试用旧网页 → 接入 Lite    新建或深度适配 → Skill + Agent\n已有 Lite / Full 课件 → 保存与导出    Full 不会修复结构问题", 18, 43, 625, 56, 10F, FontStyle.Regular, Color.FromArgb(61, 78, 92)));
             help.Controls.Add(choice);
             help.Controls.Add(NewLabel("导出完整版已含 Node.js 和转换引擎，无需 Codex；请完整解压。\n导出使用包内浏览器。源码包需另行配置运行时与转换引擎。", 31, 565, 660, 49, 9F, FontStyle.Regular, Color.FromArgb(91, 108, 121)));
             help.ShowDialog(this);
+        }
+
+        private Form CreateAboutForm()
+        {
+            Form about = new Form();
+            about.Text = "关于 · HTML PPT 工具箱";
+            about.StartPosition = FormStartPosition.CenterParent;
+            about.ClientSize = new Size(620, 550);
+            about.FormBorderStyle = FormBorderStyle.FixedDialog;
+            about.MaximizeBox = false;
+            about.MinimizeBox = false;
+            about.BackColor = Color.FromArgb(247, 250, 248);
+            about.Font = new Font("Microsoft YaHei UI", 10F);
+            try { about.Icon = Icon; } catch { }
+            about.Controls.Add(NewLabel("关于 HTML PPT 工具箱", 28, 22, 560, 38, 20F, FontStyle.Bold, Color.FromArgb(23, 48, 71)));
+            about.Controls.Add(NewLabel("作者：躬行者", 31, 76, 550, 28, 12F, FontStyle.Bold, Color.FromArgb(40, 124, 104)));
+            about.Controls.Add(NewLabel("全网统一昵称：科学老师学AI", 31, 112, 550, 26, 10.5F, FontStyle.Regular, Color.FromArgb(91, 108, 121)));
+            AddQrCard(about, 28, "微信二维码", "扫码添加微信", "HtmlPptToolkit.AuthorWechatQr.png");
+            AddQrCard(about, 322, "公众号二维码", "扫码关注公众号", "HtmlPptToolkit.AuthorOfficialAccountQr.jpg");
+            about.Controls.Add(NewLabel("HTML PPT Toolkit · v" + version, 31, 491, 390, 26, 9F, FontStyle.Regular, Color.FromArgb(91, 108, 121)));
+            Button close = new Button();
+            close.Text = "关闭";
+            close.Location = new Point(510, 486);
+            close.Size = new Size(82, 34);
+            close.FlatStyle = FlatStyle.Flat;
+            close.FlatAppearance.BorderSize = 0;
+            close.BackColor = Color.FromArgb(40, 124, 104);
+            close.ForeColor = Color.White;
+            close.Cursor = Cursors.Hand;
+            close.DialogResult = DialogResult.OK;
+            about.Controls.Add(close);
+            about.AcceptButton = close;
+            about.CancelButton = close;
+            return about;
+        }
+
+        private static void AddQrCard(Form form, int left, string title, string caption, string resource)
+        {
+            Panel card = new Panel();
+            card.Location = new Point(left, 158);
+            card.Size = new Size(270, 302);
+            card.BackColor = Color.White;
+            Label heading = NewLabel(title, 15, 13, 240, 26, 11F, FontStyle.Bold, Color.FromArgb(23, 48, 71));
+            heading.TextAlign = ContentAlignment.MiddleCenter;
+            card.Controls.Add(heading);
+            PictureBox image = new PictureBox();
+            image.Name = resource;
+            image.Location = new Point(25, 48);
+            image.Size = new Size(220, 220);
+            image.BackColor = Color.White;
+            image.SizeMode = PictureBoxSizeMode.Zoom;
+            using (Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
+            {
+                if (stream != null) using (Image original = Image.FromStream(stream)) image.Image = new Bitmap(original);
+            }
+            image.Disposed += delegate { if (image.Image != null) image.Image.Dispose(); };
+            card.Controls.Add(image);
+            Label note = NewLabel(caption, 15, 272, 240, 22, 9F, FontStyle.Regular, Color.FromArgb(91, 108, 121));
+            note.TextAlign = ContentAlignment.MiddleCenter;
+            card.Controls.Add(note);
+            form.Controls.Add(card);
         }
 
         private static void AddHelpSection(Form form, int top, string title, Color accent, string description)

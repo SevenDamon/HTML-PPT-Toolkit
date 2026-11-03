@@ -6,7 +6,7 @@ if ([string]::IsNullOrWhiteSpace($TargetFile)) {
     Add-Type -AssemblyName System.Windows.Forms
     $dialog = New-Object System.Windows.Forms.OpenFileDialog
     $dialog.Filter = 'HTML PPT (*.html)|*.html'
-    $dialog.Title = '选择要编辑的 HTML PPT'
+    $dialog.Title = '选择已接入编辑器的 HTML PPT'
     if ($dialog.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) { exit 0 }
     $TargetFile = $dialog.FileName
 }
@@ -25,6 +25,10 @@ elseif ($nodeCommand) {
     Read-Host '按回车关闭'
     exit 1
 }
+
+$checker = Join-Path (Split-Path -Parent $PSCommandPath) 'scripts\check-editor.mjs'
+& $node $checker $source
+if ($LASTEXITCODE -ne 0) { Read-Host '按回车关闭'; exit 3 }
 
 $server = Join-Path (Split-Path -Parent $PSCommandPath) 'studio\server.mjs'
 Write-Host "正在打开：$source"

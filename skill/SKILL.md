@@ -21,7 +21,9 @@ For user-facing setup, collaboration order, and invocation examples, see `README
 6. Select the smallest sufficient profile: use `lite` by default; use `full` only when the user requests write-back, PDF, or PPTX export.
 7. When the target does not already load the shared SDK, run `scripts/install-editor.mjs <input> [output] --profile lite|full [--strip-legacy]`.
 8. Run `scripts/check-deck.mjs <file> --profile lite|full` after implementation.
-9. Test Full-only capabilities in the local studio. Do not imply that direct `file://` opening can write files or generate Office documents.
+9. For new decks, design editable DOM from the first draft; for old decks, inspect and adapt unsupported structures rather than only inserting a toolbar. Verify text/image/module selection, editing, navigation and HTML export. Explain any remaining limits.
+10. The toolbox quick-attach action creates Lite; its save/export action opens an already integrated Lite/Full deck and enables Full services without duplicating the editor. Unintegrated decks must be adapted first.
+11. Test Full-only capabilities in the local studio. Do not imply that direct `file://` opening can write files or generate Office documents.
 
 ## Integration rules
 

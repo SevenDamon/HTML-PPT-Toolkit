@@ -13,7 +13,7 @@ if ([string]::IsNullOrWhiteSpace($TargetFile)) {
     Add-Type -AssemblyName System.Windows.Forms
     $dialog = New-Object System.Windows.Forms.OpenFileDialog
     $dialog.Filter = 'HTML PPT (*.html)|*.html'
-    $dialog.Title = '选择要转换成通用编辑版的 HTML'
+    $dialog.Title = '选择要快速接入 Lite 编辑器的 HTML'
     if ($dialog.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
         Write-Host '没有选择文件。'
         Read-Host '按回车关闭'
@@ -50,13 +50,13 @@ elseif ($nodeCommand) {
 $toolkit = Split-Path -Parent $PSCommandPath
 $installer = Join-Path $toolkit 'scripts\install-editor.mjs'
 $checker = Join-Path $toolkit 'scripts\check-deck.mjs'
-$studio = Join-Path $toolkit 'studio\server.mjs'
+
 
 Write-Host "原文件：$source"
 Write-Host "新文件：$output"
 Write-Host ''
 
-& $node $installer $source $output '--profile' 'full' '--strip-legacy'
+& $node $installer $source $output '--profile' 'lite' '--strip-legacy'
 if ($LASTEXITCODE -ne 0) {
     Write-Host '转换失败，原文件没有被修改。' -ForegroundColor Red
     Read-Host '按回车关闭'
@@ -64,10 +64,10 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host ''
-& $node $checker $output '--profile' 'full'
+& $node $checker $output '--profile' 'lite'
 $checkCode = $LASTEXITCODE
 if ($checkCode -eq 0) {
-    Write-Host '转换完成，Full 编辑版兼容性检查已通过。' -ForegroundColor Green
+    Write-Host 'Lite 编辑器已接入；可以编辑并另存 HTML。检查通过不代表所有内容均已验证。' -ForegroundColor Green
 } elseif ($checkCode -eq 3) {
     Write-Host '编辑器已经安装，但原网页存在结构兼容风险。' -ForegroundColor Yellow
     Write-Host '这不等于转换失败；请重点实测翻页、页面比例和逐页导出。' -ForegroundColor Yellow
@@ -77,10 +77,8 @@ if ($checkCode -eq 0) {
 }
 
 Write-Host ''
-if ((Read-Host '是否立即用 HTML PPT 工作台打开？输入 Y 后回车') -match '^[Yy]$') {
-    & $node $studio '--file' $output
-}
+Write-Host '此为规则自动接入，不保证所有内容都可编辑；复杂网页请使用 Skill + Agent 适配结构。' -ForegroundColor Yellow
+Write-Host '需要保存到源 HTML 或导出 PDF/PPTX 时，使用工具箱第二项打开生成的文件。'
 
-Write-Host ''
 Write-Host "生成位置：$output"
 Read-Host '按回车关闭'

@@ -32,6 +32,8 @@ $stream.Dispose()
 $graphics.Dispose()
 $bitmap.Dispose()
 
-& $compiler /nologo /target:winexe /optimize+ /win32icon:$icon /out:$output /reference:System.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll $source
+$wechatQr = Join-Path $toolkit 'launcher\assets\author-wechat-qr.png'
+$officialQr = Join-Path $toolkit 'launcher\assets\author-official-account-qr.jpg'
+& $compiler /nologo /target:winexe /optimize+ /win32icon:$icon /out:$output /reference:System.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll "/resource:$wechatQr,HtmlPptToolkit.AuthorWechatQr.png" "/resource:$officialQr,HtmlPptToolkit.AuthorOfficialAccountQr.jpg" $source
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $output)) { throw 'Failed to build HTML-PPT-Toolkit.exe.' }
 Write-Host "Launcher built: $output"

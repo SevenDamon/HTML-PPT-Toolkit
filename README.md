@@ -1,137 +1,50 @@
 # HTML PPT Toolkit
 
-一套面向离线 HTML 演示稿的通用工具，不绑定某一场课程内容。
+当前版本：`0.16.2`。一套用于 HTML PPT 快速接入编辑器、保存源文件和导出 PDF/PPTX 的 Windows 工具。
 
-当前版本：`0.15.2`
+主窗口“使用说明”旁的“关于”可查看作者躬行者（全网统一昵称：科学老师学AI）、微信二维码及公众号二维码。二维码内嵌于 EXE，离线可查看。
 
-项目仓库：<https://github.com/SevenDamon/HTML-PPT-Toolkit>
+## 三个入口
 
-## 获取与运行
+| 入口 | 作用 | 边界 |
+| --- | --- | --- |
+| 快速接入编辑器 | 保留原文件，生成 Lite 可编辑 HTML | 可编辑与另存 HTML；无源文件写回、PDF/PPTX；只做规则自动识别 |
+| 打开课件 · 保存与导出 | 打开已经接入编辑器的 Lite/Full 课件，启用 Full 后台服务 | 保存源文件前自动备份；不重复安装工具栏，不负责重构页面 |
+| 获取 Skill | 打开 html-ppt-author 的 GitHub 页面及安装说明 | 需要按平台说明安装，不会自动完成安装 |
 
-### Windows 直接使用
+## 选择流程
 
-直接下载：[v0.15.2 Windows x64 导出完整版](https://github.com/SevenDamon/HTML-PPT-Toolkit/releases/download/v0.15.2/HTML-PPT-Toolkit-v0.15.2-Windows-x64-Full.zip)。完整解压后运行 EXE；不要用仓库的 Source code ZIP 代替此分发包，后者不包含 Node.js、引擎依赖及导出浏览器。
+- 想快速试用旧网页：先用第一项。自动接入不等于全部内容都已验证可编辑。
+- 新建 PPT 或复杂旧网页：用 Skill + Agent 制作/适配结构并验收，再进入工具箱。
+- 只改字、换图、排版且另存新版：直接双击 Lite HTML，使用导出 HTML。
+- 要保存到源 HTML 或导出 PDF/PPTX：用第二项打开已有 Lite/Full 文件，保持后台窗口运行。
+- 第二项发现未接入共享编辑器时，会提示先用第一项或 Skill，不再临时给普通 HTML 注入工具栏。
 
-**需要导出 PDF/PPTX 时，使用“导出完整版”分发 ZIP。** 此包包含 `runtime/node/node.exe`、`vendor/export-engine`、导出专用浏览器及其依赖，无需安装 Node.js、Codex 或 Skill。完整解压后双击 EXE，打开工作台，在网页工具栏点击 PDF / PPT 导出。保留整套目录；编辑界面用普通浏览器打开；PDF/PPTX 使用包内专用浏览器，不依赖系统 Chrome/Edge 的导出配置。该包面向 Windows x64，包含运行时，因此体积大于 Skill 上传包，二者用途不同。
+移动课件时，要携带 HTML、同级 html-ppt-editor 文件夹及实际使用的素材。第一项不修改原文件，生成“原名_通用编辑版.html”；重名时询问覆盖。
 
-源码仓库和仅含启动器的普通包不会自动包含上述二进制依赖。开发者可用 `node scripts/build-portable.mjs <新输出目录>` 从本机引擎构建分发目录；构建时会下载对应 Node.js 许可证和 Playwright 导出浏览器，运行时无需下载依赖。构建来源支持 DASHI_PPT_PROJECT。导出优先查找显式配置，再查本地 vendor/export-engine，最后才回退到本机 Skill 目录。
+## 保存与导出规则
 
-1. 下载或克隆本仓库。
-2. 双击 `HTML-PPT-Toolkit.exe`。
-3. 在窗口中选择“转换为 Full 编辑版”“打开 HTML PPT 工作台”或“构建并同步 Skill”。
+第二项对 Lite 课件启用 Full 配置，保持同一套编辑器；不会新增第二套 SDK 或工具栏。仅打开不会修改源文件。点击保存到源 HTML 后才写回修改，并保存 Full 配置，覆盖前生成 .bak-时间戳 备份。直接双击 Full HTML 仍无法使用源文件写回和 Office 导出，需要工作台后台。
 
-```powershell
-git clone https://github.com/SevenDamon/HTML-PPT-Toolkit.git
-cd HTML-PPT-Toolkit
-```
+Full 增加服务能力，不会修复图片里的文字、Canvas、复杂 SVG、特殊 iframe 或翻页结构。PDF 为静态页面；可编辑 PPTX 尽量保留文字与基本形状，复杂效果可能栅格化，网页动画不会成为 PowerPoint 动画。原有 Lite 的页面管理、图片和图形工具仍保留。
 
-运行转换、检查和本地工作台请安装 [Node.js](https://nodejs.org/) 22 或更高版本。无需安装 Codex，也无需单独安装 PowerShell 7：启动器会先查找 PATH 中的 PowerShell 7，再使用 Windows 自带的 Windows PowerShell；CMD 入口直接使用 Windows PowerShell。Codex 自带运行时仅作为可选后备。
+点击 PDF/PPTX 后会立即显示导出状态和已等待秒数，生成期间同时禁用 Office 导出按钮，避免重复下载。成功后提示查看浏览器下载列表；失败时显示原因并恢复按钮，可重试。工作台会在本次打开时刷新已识别的共享编辑器运行时，以便旧课件也获得更新；仅打开不会写入源文件。
 
-**EXE 是启动器，不是包含全部依赖的单文件安装包。** 换电脑时需要携带整个工具目录（包括 editor、scripts、studio、PS1 和 package.json），不要只复制 EXE。PowerShell 脚本采用 UTF-8 BOM 编码，兼容 Windows PowerShell 5.1 的中文读取。
+## Windows 导出完整版
 
-| 功能 | 额外环境 |
-| --- | --- |
-| 转换 HTML、网页编辑、保存源文件 | Node.js 22+、浏览器；不需要 Codex 或 Skill |
-| PDF / PPTX 导出 | 另需兼容 DashiAI PPT 转换引擎、依赖及受支持浏览器；可通过 DASHI_PPT_PROJECT 指向引擎目录，无需让 Codex 运行 |
-| 构建并同步 Skill | 开发维护功能，构建 Skill 并复制到本机 Codex Skills 目录；日常编辑无需点击 |
+正式发布包位于 [GitHub Releases](https://github.com/SevenDamon/HTML-PPT-Toolkit/releases)。请按版本下载 Windows x64 Full ZIP，而非 Source code ZIP。新版若尚未发布，请使用本地交付的同版本完整包。
 
-网页内的文字、图片、图形和布局编辑不依赖在线服务。已安装编辑器的 HTML 连同其素材、html-ppt-editor 目录可直接用浏览器打开，此时不需要启动工具箱或 Node.js；源文件写回及 PDF/PPTX 导出仍需工作台。
+完整包包含 Node.js、转换引擎、依赖及导出专用浏览器，无需安装 Codex、Skill 或 PowerShell 7。完整解压后打开 EXE，不要只复制 EXE。源码仓库不包含这些大体积运行时依赖，需要自行配置 Node.js 22+ 与兼容引擎。
 
-> 仓库目前以 Windows 使用体验为主。核心编辑器和 Node.js 脚本可跨平台使用，但 EXE、CMD、PowerShell 启动入口仅面向 Windows。
+启动器优先使用 PATH 中的 PowerShell 7，其次 Windows 自带 PowerShell。PS1 使用 UTF-8 BOM 兼容 Windows PowerShell 5.1。CMD 为旧入口兼容保留，接入编辑器 CMD 现在生成 Lite。
 
-## 先看懂三者区别
+## Skill 与开发维护
 
-| 功能 | 一句话作用 | 工具栏是否永久进入 HTML | 主要使用场景 |
-| --- | --- | --- | --- |
-| `html-ppt-author` Skill | 告诉 Agent 怎样制作符合规范的可编辑 HTML PPT，并附带便携编辑器 | Agent 可按需要安装 Lite 或 Full | 让 Agent 从大纲制作新 PPT，或由 Agent 改造旧 PPT |
-| 转换为 Full 编辑版 | 把工具栏永久安装到现有 HTML，并复制配套的 `html-ppt-editor/` 目录 | 是 | 希望以后直接双击 HTML 也能编辑，或升级旧编辑器 |
-| HTML PPT 工作台 | 临时给网页外挂工具栏，同时提供保存源文件、PDF 和 PPTX 后台 | 否；普通 HTML 保存后仍是普通 HTML | 本机编辑、保存源文件、导出 PDF/PPTX |
+[获取 html-ppt-author](https://github.com/SevenDamon/codexskill/tree/main/html-ppt-author)。同一 Skill 支持新建与旧 HTML 适配；配合 Agent 和视觉设计工具，验证文字、图片、模块、翻页与导出，不把“出现工具栏”视为适配完成。
 
-最简单的判断：
+唯一维护源是本仓库。编辑器在 editor/，Skill 文档在 skill/；skill-package/html-ppt-author 及已安装 Skill 为生成结果。运行 `node scripts/build-skill.mjs --install` 重建并同步。`构建并同步Skill.cmd` 仅供开发维护，已移出主界面，也不再重编正在运行的 EXE。修改启动器后单独运行 scripts/build-launcher.ps1。
 
-- 让 Agent 新做 PPT：用 Skill。默认 Lite；如果要导出 PDF/PPTX，直接要求 Agent 制作 Full。
-- 已有普通 HTML，希望直接双击也能编辑：先“转换为 Full 编辑版”。
-- 只想立即编辑或导出：直接用工作台打开，不必先转换。
-- 已经是最新版 Full HTML：直接用工作台，不要重复转换。
-
-Full HTML 直接双击时可以编辑和导出新版 HTML；“保存回源文件”、PDF 和 PPTX 仍必须通过工作台。移动或分享 Full HTML 时，要把 HTML 和同级 `html-ppt-editor/` 文件夹一起带走。
-
-它分为四层，并且只有一套编辑器核心：
-
-- `editor/`：可嵌入任意兼容 HTML 演示稿的前端编辑器。工具栏采用紧凑双列分组，通过 `⠿` 把手可拖动位置，顶部 `− / +` 可在 70%–130% 之间调整大小，位置与尺寸均自动保存。数字输入格隐藏浏览器原生的大号上下箭头，采用居中等宽数字显示，仍可点击直接输入。新增文本框在普通状态下可直接拖动；文字进入编辑状态后，框内左键拖动用于选择文字，拖动选中框的青色边框用于移动，八个圆形控制点用于缩放。文字颜色和字号都支持整框修改，也支持先选择局部文字后只修改选区；直接从原有文字开始框选时会自动识别所属文本框并启用文字工具。支持文字编辑、添加文字、图片添加/替换/裁剪，以及 HTML/CSS 图形的显式选择；图形库可添加矩形、圆角矩形、圆/椭圆、三角形、菱形、五边形、六边形、平行四边形、梯形、燕尾箭头、右箭头和五角星，并支持移动缩放、填充色、边框、圆角、透明度和层级调整；同时支持对齐线、动画顺序、撤销/重做、本地草稿和导出 HTML。
-- `studio/`：本地工作台。除前端编辑能力外，提供保存源文件、导出 PDF 和导出可继续编辑的 PPTX。
-- `scripts/`：安装与兼容性检查工具。
-- `skill/`：Skill 的维护源；`skill-package/html-ppt-author/` 和 Codex 中已安装的 Skill 都由它自动生成。
-
-## 唯一核心与两种入口
-
-`html-ppt-toolkit` 是唯一维护源。编辑器、安装器和检查器只在这里修改；`html-ppt-author` Skill 是便携发布包，不再单独维护另一套逻辑。
-
-- Agent 新建或改造 HTML PPT：使用 `html-ppt-author`，默认安装 Lite，只保留网页内编辑与导出 HTML。
-- 把现有 HTML 转成完整编辑工作稿：使用“把HTML变成通用编辑版”，固定安装 Full。
-- 保存回源 HTML、导出 PDF/PPTX：使用“启动HTML-PPT工作台”。工作台会尊重已有的明确 Lite/Full 配置；没有配置时按 Full 打开。
-- 修改核心后：双击“构建并同步Skill”，重建便携 Skill、安装到 Codex，并逐文件校验哈希。
-
-不要直接修改 `skill-package/html-ppt-author/` 或本机 `$CODEX_HOME/skills/html-ppt-author/`，它们都是生成结果。
-
-## 最快使用方式
-
-日常只需要记住并双击 `HTML-PPT-Toolkit.exe`，也可以使用 `HTML-PPT工具箱.cmd` 打开同一个窗口。窗口中包含“转换为 Full 编辑版”“打开 HTML PPT 工作台”“构建并同步 Skill”和“使用说明”入口；原来的三个 CMD 仍作为底层功能保留。EXE 的可重复构建源码位于 `launcher/`，构建脚本为 `scripts/build-launcher.ps1`。
-
-把一个 HTML 演示稿拖到 `启动HTML-PPT工作台.cmd` 上，或双击启动器后选择文件。
-
-工作台会在浏览器中打开演示稿。网页内修改可保存回源文件；保存前会在源文件旁生成带时间戳的 `.bak-...` 备份。
-
-## 给现有 HTML 安装编辑器
-
-最简单的方式：把原 HTML 拖到 `把HTML变成通用编辑版.cmd` 上，或者双击该脚本后选择文件。它固定生成 Full 编辑版，并自动：
-
-1. 保留原文件；
-2. 生成 `原文件名_通用编辑版.html`；
-3. 安装共享编辑器；
-4. 清理本工具早期版本的旧工具栏；
-5. 运行兼容性检查；
-6. 询问是否立即用工作台打开。
-
-如需命令行操作，也可以使用下面的方式。
-
-```powershell
-node scripts/install-editor.mjs "D:\deck.html" "D:\deck-lite.html" --profile lite
-node scripts/install-editor.mjs "D:\deck.html" "D:\deck-full.html" --profile full
-```
-
-如页面已经包含旧版编辑工具栏，可创建一份移除旧运行时的副本：
-
-```powershell
-node scripts/install-editor.mjs "D:\deck.html" "D:\deck-通用工具版.html" --profile full --strip-legacy
-```
-
-安装脚本会把编辑器复制到目标 HTML 同级的 `html-ppt-editor/` 目录，并写入相对路径引用。这样整个目录可以一起迁移。
-
-## 兼容性检查
-
-```powershell
-node scripts/check-deck.mjs "D:\deck.html" --profile lite
-node scripts/check-deck.mjs "D:\deck.html" --profile full
-```
-
-详细页面契约见 [SPEC.md](SPEC.md)。示例见 `examples/demo.html`。
-
-## Agent / Codex 协作
-
-配套 Skill 的维护源位于 `skill/`，构建结果位于 `skill-package/html-ppt-author/`，本机安装名为 `$html-ppt-author`。以后让 Agent 新建或迁移 HTML PPT 时调用这个 Skill，它会先遵守统一页面契约，再安装共享编辑器并运行兼容性检查。
-
-核心升级后运行：
-
-```powershell
-node scripts/build-skill.mjs --install
-```
-
-也可以直接双击 `构建并同步Skill.cmd`。
-
-Skill 自带编辑器运行时和安装脚本，因此不依赖本培训项目的目录。把 Skill 与 `html-ppt-toolkit/` 一起复制到另一台电脑时，网页编辑能力可以独立迁移；PDF/PPTX 仍要求目标电脑具备 Node.js 和 DashiAI PPT 转换引擎。
-
-Skill 也单独发布在 [`SevenDamon/codexskill`](https://github.com/SevenDamon/codexskill) 的 `html-ppt-author/` 目录。只需要 Agent 制作规范与 Lite 网页编辑能力时，可以仅安装该目录；需要 Full 的源文件写回和 PDF/PPTX 后端时，仍需本工具包。
+`node scripts/build-portable.mjs <新输出目录>` 构建完整分发目录。DASHI_PPT_PROJECT 指定引擎来源，NODE_LICENSE_FILE 可指定本地 Node 许可证，PORTABLE_BROWSER_DIR 可复用已下载的导出浏览器，否则构建时下载。
 
 ## 开发与验证
 
