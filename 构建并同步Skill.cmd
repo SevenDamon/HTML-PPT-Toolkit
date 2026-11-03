@@ -1,1 +1,1 @@
-@"%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe" -NoLogo -NoProfile -STA -ExecutionPolicy Bypass -File "%~dp0build-and-sync-skill.ps1"
+@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -STA -ExecutionPolicy Bypass -File "%~dp0build-and-sync-skill.ps1"

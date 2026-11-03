@@ -357,6 +357,6 @@
     return{toggleFocus:toggleFocus,selectElement:selectElement,undoDelete:undoDelete};
   }
 
-  global.HtmlPptEditor={init:init,version:'0.15.0'};
+  global.HtmlPptEditor={init:init,version:'0.15.2'};
   if(document.currentScript&&document.currentScript.dataset.autoInit!=='false'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){try{init()}catch(e){console.warn(e)}});else setTimeout(function(){try{init()}catch(e){console.warn(e)}},0)}
 })(window);

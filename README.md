@@ -2,13 +2,19 @@
 
 一套面向离线 HTML 演示稿的通用工具，不绑定某一场课程内容。
 
-当前版本：`0.15.0`
+当前版本：`0.15.2`
 
 项目仓库：<https://github.com/SevenDamon/HTML-PPT-Toolkit>
 
 ## 获取与运行
 
 ### Windows 直接使用
+
+直接下载：[v0.15.2 Windows x64 导出完整版](https://github.com/SevenDamon/HTML-PPT-Toolkit/releases/download/v0.15.2/HTML-PPT-Toolkit-v0.15.2-Windows-x64-Full.zip)。完整解压后运行 EXE；不要用仓库的 Source code ZIP 代替此分发包，后者不包含 Node.js、引擎依赖及导出浏览器。
+
+**需要导出 PDF/PPTX 时，使用“导出完整版”分发 ZIP。** 此包包含 `runtime/node/node.exe`、`vendor/export-engine`、导出专用浏览器及其依赖，无需安装 Node.js、Codex 或 Skill。完整解压后双击 EXE，打开工作台，在网页工具栏点击 PDF / PPT 导出。保留整套目录；编辑界面用普通浏览器打开；PDF/PPTX 使用包内专用浏览器，不依赖系统 Chrome/Edge 的导出配置。该包面向 Windows x64，包含运行时，因此体积大于 Skill 上传包，二者用途不同。
+
+源码仓库和仅含启动器的普通包不会自动包含上述二进制依赖。开发者可用 `node scripts/build-portable.mjs <新输出目录>` 从本机引擎构建分发目录；构建时会下载对应 Node.js 许可证和 Playwright 导出浏览器，运行时无需下载依赖。构建来源支持 DASHI_PPT_PROJECT。导出优先查找显式配置，再查本地 vendor/export-engine，最后才回退到本机 Skill 目录。
 
 1. 下载或克隆本仓库。
 2. 双击 `HTML-PPT-Toolkit.exe`。
@@ -19,7 +25,17 @@ git clone https://github.com/SevenDamon/HTML-PPT-Toolkit.git
 cd HTML-PPT-Toolkit
 ```
 
-运行转换、检查和本地工作台需要 [Node.js](https://nodejs.org/) 18 或更高版本。网页内的文字、图片、图形和布局编辑不依赖在线服务；PDF/PPTX 导出还需要本机安装 `dashiai-ppt` Skill 所带的转换引擎，或通过环境变量 `DASHI_PPT_PROJECT` 指向兼容引擎目录。
+运行转换、检查和本地工作台请安装 [Node.js](https://nodejs.org/) 22 或更高版本。无需安装 Codex，也无需单独安装 PowerShell 7：启动器会先查找 PATH 中的 PowerShell 7，再使用 Windows 自带的 Windows PowerShell；CMD 入口直接使用 Windows PowerShell。Codex 自带运行时仅作为可选后备。
+
+**EXE 是启动器，不是包含全部依赖的单文件安装包。** 换电脑时需要携带整个工具目录（包括 editor、scripts、studio、PS1 和 package.json），不要只复制 EXE。PowerShell 脚本采用 UTF-8 BOM 编码，兼容 Windows PowerShell 5.1 的中文读取。
+
+| 功能 | 额外环境 |
+| --- | --- |
+| 转换 HTML、网页编辑、保存源文件 | Node.js 22+、浏览器；不需要 Codex 或 Skill |
+| PDF / PPTX 导出 | 另需兼容 DashiAI PPT 转换引擎、依赖及受支持浏览器；可通过 DASHI_PPT_PROJECT 指向引擎目录，无需让 Codex 运行 |
+| 构建并同步 Skill | 开发维护功能，构建 Skill 并复制到本机 Codex Skills 目录；日常编辑无需点击 |
+
+网页内的文字、图片、图形和布局编辑不依赖在线服务。已安装编辑器的 HTML 连同其素材、html-ppt-editor 目录可直接用浏览器打开，此时不需要启动工具箱或 Node.js；源文件写回及 PDF/PPTX 导出仍需工作台。
 
 > 仓库目前以 Windows 使用体验为主。核心编辑器和 Node.js 脚本可跨平台使用，但 EXE、CMD、PowerShell 启动入口仅面向 Windows。
 

@@ -1,13 +1,13 @@
 {
   "name": "html-ppt-author",
   "generatedFrom": "html-ppt-toolkit",
-  "toolkitVersion": "0.15.0",
-  "editorVersion": "0.15.0",
-  "generatedAt": "2026-10-30T10:19:03.912Z",
+  "toolkitVersion": "0.15.2",
+  "editorVersion": "0.15.2",
+  "generatedAt": "2026-11-03T01:12:41.820Z",
   "files": {
     "agents/openai.yaml": "1dcceda3e5a392de0e427a0ff2354940b3f647affa2674fdc94df7a0a0869c0e",
     "assets/editor/html-ppt-editor.css": "45d1f15dedffd970ad29f0db99e6e5651f4d9517fe28a9dad1c364bdaa02044a",
-    "assets/editor/html-ppt-editor.js": "77088a33103e89bb01bdd4cca82baad4b665db2fa2c2b4c39f2873117b6f0250",
+    "assets/editor/html-ppt-editor.js": "3214e9993265cbace8f84d2083d5981c7e31cd31e1ad3526c1601b915bdaa5a3",
     "assets/editor/html-ppt-frame-adapter.js": "41b5e49affa75cd15c2e9e5e16f71a60fad2854cba546c9767df2e18668b2afe",
     "README.md": "7a45735cf7367f5c3f2b9419ceb38329308ddd85ce7552be016313c7164ed3e9",
     "references/contract.md": "a8bac63bdd94d882ec94056942cd374fac01ebd2011c70c284adc5d3ece5dbe3",

@@ -17,3 +17,7 @@ Thumbs.db
 
 # Dependencies are resolved from the local runtime; do not vendor them here
 node_modules/
+
+# Portable runtime and export engine are distributed as Release assets
+runtime/
+vendor/export-engine/

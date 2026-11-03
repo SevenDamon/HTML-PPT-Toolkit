@@ -33,14 +33,16 @@ if (Test-Path -LiteralPath $output) {
     if ((Read-Host '是否覆盖？输入 Y 后回车') -notmatch '^[Yy]$') { exit 0 }
 }
 
+$portableNode = Join-Path (Split-Path -Parent $PSCommandPath) 'runtime\node\node.exe'
 $nodeCommand = Get-Command node -ErrorAction SilentlyContinue
 $bundledNode = Join-Path $env:USERPROFILE '.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
-if ($nodeCommand) {
+if (Test-Path -LiteralPath $portableNode) { $node = $portableNode }
+elseif ($nodeCommand) {
     $node = $nodeCommand.Source
 } elseif (Test-Path -LiteralPath $bundledNode) {
     $node = $bundledNode
 } else {
-    Write-Host '未找到 Node.js。请先安装 Node.js，或在装有 Codex 桌面运行时的电脑上使用。' -ForegroundColor Red
+    Write-Host '未找到 Node.js。请先安装 Node.js 22 或更高版本（无需安装 Codex），然后重新打开工具箱。' -ForegroundColor Red
     Read-Host '按回车关闭'
     exit 1
 }

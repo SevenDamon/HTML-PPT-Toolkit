@@ -6,9 +6,9 @@ This repository provides one shared editor core for editable offline HTML slide 
 
 ## Runtime
 
-- Node.js 18+ runs the installer, validator, Skill builder, and local studio.
+- Node.js 22+ runs the installer, validator, Skill builder, and local studio.
 - `HTML-PPT-Toolkit.exe` and the CMD/PowerShell wrappers are Windows launchers.
-- PDF/PPTX export additionally requires the compatible DashiAI PPT conversion engine.
+- The Full portable Release includes Node.js, the compatible DashiAI PPT export engine, its dependencies and a Chromium headless browser; keep these binaries in Release assets, not Git history. Source checkouts require those dependencies to be configured separately.
 
 ## Source of truth
 

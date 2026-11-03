@@ -99,7 +99,7 @@ namespace HtmlPptToolkitLauncher
             }
             if (String.IsNullOrEmpty(pwshPath))
             {
-                MessageBox.Show("未找到 PowerShell 7（pwsh.exe）。请在安装 Codex 运行时的电脑上使用。", "HTML PPT 工具箱", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("未找到可用的 PowerShell。请恢复 Windows 自带的 Windows PowerShell，或安装 PowerShell 7；无需安装 Codex。", "HTML PPT 工具箱", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             try
@@ -123,7 +123,7 @@ namespace HtmlPptToolkitLauncher
             Form help = new Form();
             help.Text = "使用说明 · v" + version;
             help.StartPosition = FormStartPosition.CenterParent;
-            help.ClientSize = new Size(720, 585);
+            help.ClientSize = new Size(720, 632);
             help.FormBorderStyle = FormBorderStyle.FixedDialog;
             help.MaximizeBox = false;
             help.MinimizeBox = false;
@@ -142,6 +142,7 @@ namespace HtmlPptToolkitLauncher
             choice.Controls.Add(NewLabel("怎么选", 18, 13, 120, 27, 11F, FontStyle.Bold, Color.FromArgb(23, 48, 71)));
             choice.Controls.Add(NewLabel("Agent 新做 → Skill    普通 HTML 永久带工具栏 → 转换 Full\n只想编辑或导出 → 工作台    已是最新版 Full → 直接进工作台", 18, 43, 625, 56, 10F, FontStyle.Regular, Color.FromArgb(61, 78, 92)));
             help.Controls.Add(choice);
+            help.Controls.Add(NewLabel("导出完整版已含 Node.js 和转换引擎，无需 Codex；请完整解压。\n导出使用包内浏览器。源码包需另行配置运行时与转换引擎。", 31, 565, 660, 49, 9F, FontStyle.Regular, Color.FromArgb(91, 108, 121)));
             help.ShowDialog(this);
         }
 
@@ -163,8 +164,6 @@ namespace HtmlPptToolkitLauncher
 
         private static string ResolvePwsh()
         {
-            string bundled = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cache", "codex-runtimes", "codex-primary-runtime", "dependencies", "native", "powershell", "pwsh.exe");
-            if (File.Exists(bundled)) return bundled;
             string pathValue = Environment.GetEnvironmentVariable("PATH") ?? String.Empty;
             foreach (string directory in pathValue.Split(Path.PathSeparator))
             {
@@ -175,6 +174,11 @@ namespace HtmlPptToolkitLauncher
                 }
                 catch { }
             }
+            string windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            string builtIn = Path.Combine(windows, "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
+            if (File.Exists(builtIn)) return builtIn;
+            string bundled = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cache", "codex-runtimes", "codex-primary-runtime", "dependencies", "native", "powershell", "pwsh.exe");
+            if (File.Exists(bundled)) return bundled;
             return null;
         }
 
