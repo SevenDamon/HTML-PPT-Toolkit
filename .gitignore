@@ -22,4 +22,4 @@ node_modules/
 
 # Portable runtime and export engine are distributed as Release assets
 runtime/
-vendor/export-engine/
+vendor/export-engine/node_modules/

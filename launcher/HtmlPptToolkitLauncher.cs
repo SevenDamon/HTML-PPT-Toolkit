@@ -70,7 +70,7 @@ namespace HtmlPptToolkitLauncher
 
             AddAction(105, "快速接入编辑器", "生成 Lite 编辑版，可编辑及另存 HTML。复杂网页建议由 Skill + Agent 适配结构。", "convert-html.ps1");
             AddAction(205, "打开课件 · 保存与导出", "打开已接入编辑器的课件，启用源 HTML 保存及 PDF/PPTX 导出，不重复安装工具栏。", "start-studio.ps1");
-            AddAction(305, "获取 Skill", "打开 GitHub 的 Skill 页面，按说明安装到 Agent，用于新建或深度适配旧网页。", "https://github.com/SevenDamon/codexskill/tree/main/html-ppt-author");
+            AddAction(305, "获取 Skill", "打开 GitHub 的 Skill 页面，按说明安装到 Agent，用于新建或深度适配旧网页。", "https://github.com/SevenDamon/HTML-PPT-Toolkit/tree/main/skill-package/html-ppt-author");
 
             status = NewLabel("准备就绪", 31, 424, 550, 24, 9F, FontStyle.Regular, Color.FromArgb(91, 108, 121));
             Controls.Add(status);

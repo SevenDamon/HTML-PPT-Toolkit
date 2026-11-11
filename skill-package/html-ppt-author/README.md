@@ -2,16 +2,16 @@
 
 `html-ppt-author` 是一套面向可编辑 HTML 演示稿的 Codex Skill。它不负责替代视觉设计，而是确保 HTML PPT 能够继续编辑、稳定翻页、保存草稿、导出新版 HTML，并按需接入 PDF/PPTX 工作台。
 
-发布地址：<https://github.com/SevenDamon/codexskill/tree/main/html-ppt-author>
+统一发布地址：<https://github.com/SevenDamon/HTML-PPT-Toolkit/tree/main/skill-package/html-ppt-author>
 
 ## 安装
 
-克隆 Skill 合集，然后把整个 `html-ppt-author/` 目录复制到 Codex Skills 目录。不要只复制 `SKILL.md`，因为编辑器、检查器和兼容协议都在配套目录中。
+克隆统一仓库，然后把生成包中整个 `html-ppt-author/` 目录复制到 Codex Skills 目录。不要只复制 `SKILL.md` 或 `skill/` 源文档，因为编辑器、检查器和兼容协议都在配套目录中。其他 Agent 平台请按平台的 Skill 安装方式导入完整目录。
 
 ```powershell
-git clone https://github.com/SevenDamon/codexskill.git
+git clone https://github.com/SevenDamon/HTML-PPT-Toolkit.git
 New-Item -ItemType Directory -Force "$env:USERPROFILE\.codex\skills" | Out-Null
-Copy-Item -Recurse -Force ".\codexskill\html-ppt-author" "$env:USERPROFILE\.codex\skills\html-ppt-author"
+Copy-Item -Recurse -Force ".\HTML-PPT-Toolkit\skill-package\html-ppt-author" "$env:USERPROFILE\.codex\skills\html-ppt-author"
 ```
 
 安装后重启 Codex，或让客户端重新加载 Skills。完整工具包、Windows 启动器与本地导出工作台位于 <https://github.com/SevenDamon/HTML-PPT-Toolkit>。

@@ -12,6 +12,7 @@ const shouldInstall = process.argv.includes('--install');
 await assertDirectory(sourceRoot, 'Skill 源目录');
 await resetOwnedDirectory(packageRoot, path.join(toolkitRoot, 'skill-package'));
 await cp(sourceRoot, packageRoot, { recursive: true });
+await copyFile('LICENSE', 'LICENSE');
 
 await copyFile('editor/html-ppt-editor.js', 'assets/editor/html-ppt-editor.js');
 await copyFile('editor/html-ppt-editor.css', 'assets/editor/html-ppt-editor.css');

@@ -1,6 +1,17 @@
 # HTML PPT Toolkit
 
-当前版本：`0.16.2`。一套用于 HTML PPT 快速接入编辑器、保存源文件和导出 PDF/PPTX 的 Windows 工具。
+当前版本：`0.17.0`。开源的 HTML PPT 编辑器、Agent Skill 与 Windows 保存/导出工具箱，共用一套编辑核心，采用 [MIT 许可证](LICENSE)。
+
+## 从这里开始
+
+| 你想做什么 | 获取什么 | 怎么开始 |
+| --- | --- | --- |
+| 让 Agent 新建或改造可编辑 HTML PPT | [html-ppt-author Skill](skill-package/html-ppt-author) | 按 Skill 的 README 安装，再向 Agent 提供大纲或现有 HTML |
+| 手动编辑已有 HTML | [Windows 完整工具箱](https://github.com/SevenDamon/HTML-PPT-Toolkit/releases/latest) | 完整解压 Full ZIP，打开 EXE，选择“快速接入编辑器” |
+| 保存到源 HTML、导出 PDF/可编辑 PPTX | 同一个 Windows 完整工具箱 | 选择“打开课件 · 保存与导出”，打开已接入编辑器的 HTML |
+| 修改源码或参与开发 | 本仓库源码 | 阅读 [开发说明](CONTRIBUTING.md) 和 [第三方许可](THIRD_PARTY_NOTICES.md) |
+
+Skill 和工具箱统一在本仓库维护。Skill 包可独立安装，不需要下载 Windows 运行时；普通用户下载 Release 的 Full ZIP，无需安装 Codex。Source code ZIP 是开发源码，不是开箱即用的完整工具箱。
 
 主窗口“使用说明”旁的“关于”可查看作者躬行者（全网统一昵称：科学老师学AI）、微信二维码及公众号二维码。二维码内嵌于 EXE，离线可查看。
 
@@ -40,11 +51,11 @@ Full 增加服务能力，不会修复图片里的文字、Canvas、复杂 SVG�
 
 ## Skill 与开发维护
 
-[获取 html-ppt-author](https://github.com/SevenDamon/codexskill/tree/main/html-ppt-author)。同一 Skill 支持新建与旧 HTML 适配；配合 Agent 和视觉设计工具，验证文字、图片、模块、翻页与导出，不把“出现工具栏”视为适配完成。
+[获取 html-ppt-author](skill-package/html-ppt-author)。同一 Skill 支持新建与旧 HTML 适配；配合 Agent 和视觉设计工具，验证文字、图片、模块、翻页与导出，不把“出现工具栏”视为适配完成。原 codexskill 合集地址继续保留，本仓库为统一维护及发布入口。
 
 唯一维护源是本仓库。编辑器在 editor/，Skill 文档在 skill/；skill-package/html-ppt-author 及已安装 Skill 为生成结果。运行 `node scripts/build-skill.mjs --install` 重建并同步。`构建并同步Skill.cmd` 仅供开发维护，已移出主界面，也不再重编正在运行的 EXE。修改启动器后单独运行 scripts/build-launcher.ps1。
 
-`node scripts/build-portable.mjs <新输出目录>` 构建完整分发目录。DASHI_PPT_PROJECT 指定引擎来源，NODE_LICENSE_FILE 可指定本地 Node 许可证，PORTABLE_BROWSER_DIR 可复用已下载的导出浏览器，否则构建时下载。
+`node scripts/build-portable.mjs <新输出目录>` 构建完整分发目录。固定的 MIT 转换源码已包含在 `vendor/export-engine/`；先按 [开发说明](CONTRIBUTING.md) 安装依赖。DASHI_PPT_PROJECT 可指定已有依赖缓存，NODE_LICENSE_FILE 可指定本地 Node 许可证，PORTABLE_BROWSER_DIR 可复用已下载的导出浏览器，否则构建时下载。
 
 ## 开发与验证
 
